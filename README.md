@@ -13,15 +13,12 @@ npx playwright install chromium
 npm run dev
 
 # Example Request
-```json
 {
   "urls": ["https://walmart.com", "target.com", "whataburger.com"],
   "takeScreenshots": true
 }
-```json
 
 #Example Response
-```json
 [
   {
     "url": "https://espn.com",
@@ -45,7 +42,6 @@ npm run dev
     "status": "success"
   }
 ]
-```json
 
 #Assumptions
 1. Allowing pages ~30 seconds to load
