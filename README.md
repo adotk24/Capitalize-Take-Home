@@ -18,6 +18,7 @@ npm run dev
   "urls": ["https://walmart.com", "target.com", "whataburger.com"],
   "takeScreenshots": true
 }
+```json
 
 #Example Response
 ```json
@@ -44,7 +45,7 @@ npm run dev
     "status": "success"
   }
 ]
-
+```json
 
 #Assumptions
 1. Allowing pages ~30 seconds to load
