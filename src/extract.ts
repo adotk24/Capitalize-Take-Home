@@ -1,0 +1,61 @@
+import {chromium, Browser, Page} from 'playwright'
+import { PageData } from './types';
+
+export class Extract {
+    async extract(url: string, takeScreenshot: boolean = false, browser: Browser): Promise<PageData>{
+        const page = await browser.newPage()
+
+        try {
+            await page.goto(url, {
+                waitUntil: 'domcontentloaded',
+                timeout: 30000
+            })
+            const title = await page.title().catch(() => 'No Title')
+            const description = await page.$eval('meta[name="description"]', (el) => {
+                return el.getAttribute('content')
+            }).catch(() => 'No Description')
+
+            let screenshot: string = ''
+            if (takeScreenshot){
+                const screenshotBuffer = await page.screenshot({
+                    fullPage: true,
+                    type: 'png'
+                }).catch(() => null)
+                // screenshot = screenshotBuffer ? screenshotBuffer.toString('base64') : 'No Screenshot'
+                const fs = require('fs');
+                // fs.writeFileSync('screenshot.txt', screenshot); to read base64 string
+            }
+            const status = title !== 'No Title' && description !== 'No Description' && screenshot != 'No Screenshot' ? 'success': 'partial'
+            
+            return {url, title, description, screenshot, status}
+        } catch{
+            return {
+                url, 
+                title: '', 
+                description: '', 
+                screenshot: '', 
+                error: `Error Extracting ${url}`, 
+                status: 'fail'
+            }
+        } finally{
+            await page.close()
+        }
+    }
+
+    async handleUrls(urls: string[], takeScreenshot: boolean = false): Promise<PageData[]>{   
+        const browser = await chromium.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        })
+        const maxBatchSize = 5
+        const results = []
+        for (let i = 0; i < urls.length; i += maxBatchSize){
+            const batchedPromises = urls.slice(i, maxBatchSize + i).map(url => this.extract(url, takeScreenshot, browser))
+            const fetchedData = await Promise.all(batchedPromises)
+            results.push(...fetchedData)
+        }      
+
+        await browser.close()
+        return results
+    }
+}
