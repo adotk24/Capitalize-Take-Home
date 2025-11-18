@@ -1,5 +1,7 @@
 import {chromium, Browser, Page} from 'playwright'
 import { PageData } from './types';
+import fs from 'fs'
+import path from 'path'
 
 export class Extract {
     async extract(url: string, takeScreenshot: boolean = false, browser: Browser): Promise<PageData>{
@@ -10,20 +12,28 @@ export class Extract {
                 waitUntil: 'domcontentloaded',
                 timeout: 30000
             })
+            await page.waitForTimeout(2000) // 2 seconds delay for snapshot
             const title = await page.title().catch(() => 'No Title')
             const description = await page.$eval('meta[name="description"]', (el) => {
                 return el.getAttribute('content')
             }).catch(() => 'No Description')
 
-            let screenshot: string = ''
+            let screenshot: string = 'No Screenshot'
             if (takeScreenshot){
                 const screenshotBuffer = await page.screenshot({
                     fullPage: true,
                     type: 'png'
                 }).catch(() => null)
-                // screenshot = screenshotBuffer ? screenshotBuffer.toString('base64') : 'No Screenshot'
-                const fs = require('fs');
-                // fs.writeFileSync('screenshot.txt', screenshot); to read base64 string
+                if (screenshotBuffer) {
+                    screenshot = screenshotBuffer.toString('base64')
+                    const fs = require('fs');
+                    const path = require('path');
+                    const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+                    if (!fs.existsSync(screenshotsDir)) {fs.mkdirSync(screenshotsDir)}
+                    const filename = `screenshot_${Date.now()}.png`;
+                    fs.writeFileSync(path.join(screenshotsDir, filename), screenshotBuffer);
+                    // fs.writeFileSync('screenshot.txt', screenshot); to read base64 string
+                }
             }
             const status = title !== 'No Title' && description !== 'No Description' && screenshot != 'No Screenshot' ? 'success': 'partial'
             

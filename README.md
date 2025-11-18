@@ -43,12 +43,13 @@ npm run dev
   }
 ]
 
+
 #Assumptions
 1. Allowing pages ~30 seconds to load
 2. Only allowing 100 websites per request
 3. takeScreenshot variable applies to whole batch of data, and not each individually
 4. No need to use env file for port number
 5. URLS may fail normalization
-6. Screenshots only need to be saved as string
+6. Screenshots are returned as strings + saved as images in screenshots folder
 7. Only want 5 concurrent scrapes at a time
 
